@@ -11,7 +11,7 @@
 
     <!-- History List -->
     <div v-if="rollHistory.recentRolls.length > 0" class="space-y-2 max-h-[600px] overflow-y-auto">
-      <RollHistoryRollHistoryItem
+      <RollHistoryItem
         v-for="roll in rollHistory.recentRolls"
         :key="roll.id"
         :roll="roll"

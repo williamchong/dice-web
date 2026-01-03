@@ -1,13 +1,17 @@
 <template>
   <div class="relative w-screen h-screen overflow-hidden bg-gray-900 text-white">
     <!-- Fullscreen 3D Scene (90% of focus) -->
-    <div class="absolute inset-0 flex items-center justify-center">
-      <div class="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900">
-        <div class="text-center">
-          <p class="text-gray-400 text-lg mb-4">3D Scene will appear here</p>
-          <p class="text-gray-500 text-sm">Phase 2: TresJS integration</p>
-        </div>
-      </div>
+    <div class="absolute inset-0">
+      <ClientOnly>
+        <DiceRollerDiceScene />
+        <template #fallback>
+          <div class="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900">
+            <div class="text-center">
+              <p class="text-gray-400 text-lg mb-4">Loading 3D Scene...</p>
+            </div>
+          </div>
+        </template>
+      </ClientOnly>
     </div>
 
     <!-- Top Bar: Minimal Info -->
@@ -74,7 +78,7 @@
               ✕
             </button>
           </div>
-          <DiceSelectorDiceTypeSelector />
+          <DiceSelector />
         </div>
       </div>
     </Transition>
@@ -102,7 +106,7 @@
               ✕
             </button>
           </div>
-          <RollHistoryRollHistoryList />
+          <RollHistory />
         </div>
       </div>
     </Transition>

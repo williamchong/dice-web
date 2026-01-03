@@ -28,7 +28,7 @@
 <script setup lang="ts">
 import type { RollResult } from '~/stores/rollHistory'
 
-const props = defineProps<{
+defineProps<{
   roll: RollResult
 }>()
 
