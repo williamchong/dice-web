@@ -1,15 +1,16 @@
 <template>
   <TresMesh
-    v-if="mesh"
-    :position="position"
-    :rotation="rotation"
-    :geometry="mesh.geometry"
-    :material="mesh.material"
+    v-if="diceGeometry"
+    ref="meshRef"
+    :geometry="diceGeometry.geometry"
+    :material="diceGeometry.material"
+    cast-shadow
+    receive-shadow
   />
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { createDiceGeometry } from '~/composables/dice/useDiceGeometry'
 import type { DiceType } from '~/types/dice'
 import type * as THREE from 'three'
@@ -26,10 +27,43 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { diceScale } = useResponsive3D()
-const mesh = ref<{ geometry: THREE.BufferGeometry; material: THREE.Material } | null>(null)
+const { isInitialized } = useRapierWorld()
 
-onMounted(() => {
+const meshRef = ref<THREE.Mesh | null>(null)
+const diceGeometry = ref<{ geometry: THREE.BufferGeometry; material: THREE.Material } | null>(null)
+
+// Physics integration
+const physics = useDicePhysics(meshRef, props.type)
+
+// Expose physics methods for parent
+defineExpose({
+  syncFromPhysics: physics.syncMeshFromPhysics,
+  applyForce: physics.applyForce,
+  applyImpulse: physics.applyImpulse,
+  resetPosition: physics.resetPosition,
+  setAngularVelocity: physics.setAngularVelocity,
+  isMoving: physics.isMoving,
+  rigidBody: physics.rigidBody
+})
+
+onMounted(async () => {
   // Create dice geometry and material with responsive scale
-  mesh.value = createDiceGeometry(props.type, diceScale.value)
+  diceGeometry.value = createDiceGeometry(props.type, diceScale.value)
+
+  // Wait for physics to initialize, then create physics body
+  if (isInitialized.value) {
+    await physics.createPhysicsBody(props.position)
+  }
+})
+
+// Watch for physics initialization
+watch(isInitialized, async (ready) => {
+  if (ready && !physics.rigidBody.value && meshRef.value) {
+    await physics.createPhysicsBody(props.position)
+  }
+})
+
+onUnmounted(() => {
+  physics.cleanup()
 })
 </script>

@@ -3,7 +3,7 @@
     <!-- Fullscreen 3D Scene (90% of focus) -->
     <div class="absolute inset-0">
       <ClientOnly>
-        <DiceRollerDiceScene />
+        <DiceRollerDiceScene ref="diceSceneRef" />
         <template #fallback>
           <div class="w-full h-full flex items-center justify-center bg-gradient-to-b from-gray-800 to-gray-900">
             <div class="text-center">
@@ -149,6 +149,9 @@ const rollHistoryStore = useRollHistoryStore()
 const settingsStore = useSettingsStore()
 const diceConfig = useDiceConfigStore()
 
+// Ref to dice scene component
+const diceSceneRef = ref<{ rollDice: () => void } | null>(null)
+
 // UI state
 const showDiceSelector = ref(false)
 const showHistory = ref(false)
@@ -173,9 +176,16 @@ const closePanels = () => {
 }
 
 const handleRoll = () => {
-  // Placeholder for Phase 4: Actual rolling logic
-  console.log('Roll dice!')
-  // For now, just close panels
+  console.log('🎲 Roll button clicked!')
+
+  // Trigger physics roll
+  if (diceSceneRef.value?.rollDice) {
+    diceSceneRef.value.rollDice()
+  } else {
+    console.warn('Dice scene not ready yet')
+  }
+
+  // Close panels
   closePanels()
 }
 

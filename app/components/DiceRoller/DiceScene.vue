@@ -27,6 +27,7 @@
     <DiceRollerDice
       v-for="(die, index) in diceInstances"
       :key="die.id"
+      :ref="(el) => { if (el) diceRefs[index] = el }"
       :type="die.type"
       :position="die.position"
       :rotation="die.rotation"
@@ -51,6 +52,9 @@ const camera = ref()
 // Responsive 3D viewport calculations
 const { cameraPosition, cameraFov, diceSpacing } = useResponsive3D()
 
+// Physics world
+const physicsWorld = useRapierWorld()
+
 // TresJS canvas state
 const state = reactive({
   clearColor: '#0a0a0a',  // Darker background for casino/table feel
@@ -58,6 +62,29 @@ const state = reactive({
   alpha: false,
   windowSize: true
 })
+
+// Store references to dice components for physics sync
+const diceRefs = ref<any[]>([])
+
+// Physics game loop using requestAnimationFrame
+let animationFrameId: number | null = null
+
+function physicsLoop() {
+  if (physicsWorld.isInitialized.value) {
+    // Step physics simulation (fixed timestep: 60 FPS)
+    physicsWorld.step(1 / 60)
+
+    // Sync all dice meshes from physics
+    diceRefs.value.forEach((diceRef) => {
+      if (diceRef?.syncFromPhysics) {
+        diceRef.syncFromPhysics()
+      }
+    })
+  }
+
+  // Continue loop
+  animationFrameId = requestAnimationFrame(physicsLoop)
+}
 
 // Generate dice instances based on store configuration
 const diceInstances = computed(() => {
@@ -104,8 +131,71 @@ const diceInstances = computed(() => {
   return instances
 })
 
+// Initialize physics on mount
+onMounted(async () => {
+  console.log('Initializing Rapier physics...')
+  await physicsWorld.init()
+
+  // Start physics loop
+  animationFrameId = requestAnimationFrame(physicsLoop)
+})
+
+// Cleanup physics on unmount
+onUnmounted(() => {
+  // Stop animation loop
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId)
+  }
+
+  physicsWorld.cleanup()
+})
+
 // Watch for dice configuration changes
 watch(() => diceConfig.totalDiceCount, (newCount) => {
   console.log(`Dice count changed: ${newCount}`)
+  // Reset dice refs array when count changes
+  diceRefs.value = []
+})
+
+/**
+ * Roll all dice - applies random forces and positions
+ */
+function rollDice() {
+  if (!physicsWorld.isInitialized.value) {
+    console.warn('Physics not initialized yet')
+    return
+  }
+
+  diceRefs.value.forEach((diceRef, index) => {
+    if (!diceRef) return
+
+    // Reset to random position above cup (let them fall)
+    const x = (Math.random() - 0.5) * 3  // Spread within cup
+    const y = 3 + Math.random() * 2      // Drop from height 3-5
+    const z = (Math.random() - 0.5) * 3
+
+    diceRef.resetPosition([x, y, z])
+
+    // Apply random spin (angular velocity)
+    diceRef.setAngularVelocity({
+      x: (Math.random() - 0.5) * 10,
+      y: (Math.random() - 0.5) * 10,
+      z: (Math.random() - 0.5) * 10
+    })
+
+    // Apply random horizontal impulse for lateral movement
+    diceRef.applyImpulse({
+      x: (Math.random() - 0.5) * 2,
+      y: 0,  // Don't push up/down, let gravity do the work
+      z: (Math.random() - 0.5) * 2
+    })
+  })
+
+  console.log(`🎲 Rolled ${diceRefs.value.length} dice!`)
+}
+
+// Expose roll function to parent
+defineExpose({
+  rollDice
 })
 </script>
