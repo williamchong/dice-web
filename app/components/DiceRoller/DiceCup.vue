@@ -40,8 +40,8 @@
 </template>
 
 <script setup lang="ts">
-// Dice cup dimensions
-const cupSize = 8        // Width/depth of the cup (8x8 units)
-const cupWallHeight = 1.5 // Height of the walls
-const wallThickness = 0.2 // Thickness of the walls
+const { cupSize } = useResponsive3D()
+
+const cupWallHeight = 1.5
+const wallThickness = 0.2
 </script>

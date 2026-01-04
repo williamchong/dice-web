@@ -8,51 +8,53 @@ interface DiceGeometry {
 
 /**
  * Create geometry and material for a specific dice type
+ * @param type - The type of dice to create
+ * @param scale - Optional scale multiplier (default 1.0)
  */
-export function createDiceGeometry(type: DiceType): DiceGeometry {
+export function createDiceGeometry(type: DiceType, scale = 1.0): DiceGeometry {
   let geometry: THREE.BufferGeometry
 
   switch (type) {
     case 'd4':
       // Tetrahedron (4 faces)
-      geometry = new THREE.TetrahedronGeometry(0.8)
+      geometry = new THREE.TetrahedronGeometry(0.8 * scale)
       break
 
     case 'd6':
       // Cube (6 faces) with slight rounding
-      geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2)
+      geometry = new THREE.BoxGeometry(1 * scale, 1 * scale, 1 * scale, 2, 2, 2)
       break
 
     case 'd8':
       // Octahedron (8 faces)
-      geometry = new THREE.OctahedronGeometry(0.9)
+      geometry = new THREE.OctahedronGeometry(0.9 * scale)
       break
 
     case 'd10':
       // For now, use a 10-sided cylinder approximation
       // TODO: Create proper pentagonal trapezohedron geometry
-      geometry = new THREE.CylinderGeometry(0.7, 0.7, 1.2, 10)
+      geometry = new THREE.CylinderGeometry(0.7 * scale, 0.7 * scale, 1.2 * scale, 10)
       break
 
     case 'd12':
       // Dodecahedron (12 faces)
-      geometry = new THREE.DodecahedronGeometry(0.85)
+      geometry = new THREE.DodecahedronGeometry(0.85 * scale)
       break
 
     case 'd20':
       // Icosahedron (20 faces)
-      geometry = new THREE.IcosahedronGeometry(0.95)
+      geometry = new THREE.IcosahedronGeometry(0.95 * scale)
       break
 
     case 'd100':
       // d100 is typically 2x d10 (tens place + ones place)
       // Use same geometry as d10 but will be visually distinguished by color
-      geometry = new THREE.CylinderGeometry(0.7, 0.7, 1.2, 10)
+      geometry = new THREE.CylinderGeometry(0.7 * scale, 0.7 * scale, 1.2 * scale, 10)
       break
 
     default:
       // Fallback to d6
-      geometry = new THREE.BoxGeometry(1, 1, 1)
+      geometry = new THREE.BoxGeometry(1 * scale, 1 * scale, 1 * scale)
   }
 
   // Create material with default skin

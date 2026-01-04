@@ -1,7 +1,12 @@
 <template>
   <TresCanvas v-bind="state" window-size>
     <!-- Camera: Top-down view looking into the dice cup -->
-    <TresPerspectiveCamera :position="[0, 12, 0]" :look-at="[0, 0, 0]" />
+    <TresPerspectiveCamera
+      ref="camera"
+      :position="cameraPosition"
+      :look-at="[0, 0, 0]"
+      :fov="cameraFov"
+    />
 
     <!-- Lights: Overhead lighting for top-down view -->
     <TresAmbientLight :intensity="0.6" />
@@ -30,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, ref, onMounted, onUnmounted } from 'vue'
 import type { DiceType } from '~/types/dice'
 
 interface DiceInstance {
@@ -41,6 +46,10 @@ interface DiceInstance {
 }
 
 const diceConfig = useDiceConfigStore()
+const camera = ref()
+
+// Responsive 3D viewport calculations
+const { cameraPosition, cameraFov, diceSpacing } = useResponsive3D()
 
 // TresJS canvas state
 const state = reactive({
@@ -58,11 +67,12 @@ const diceInstances = computed(() => {
   // Helper to add dice of a specific type
   const addDice = (type: DiceType, count: number) => {
     for (let i = 0; i < count; i++) {
-      // Arrange dice in a grid pattern inside the cup (7x7 unit area)
+      // Arrange dice in a grid pattern inside the cup
       const row = Math.floor(index / 3)
       const col = index % 3
-      const x = (col - 1) * 2.0    // Spread horizontally within cup
-      const z = (row - 1) * 2.0    // Spread depth-wise within cup
+
+      const x = (col - 1) * diceSpacing.value
+      const z = (row - 1) * diceSpacing.value
 
       // Add small random offset for natural placement
       const randomX = (Math.random() - 0.5) * 0.3
@@ -71,7 +81,7 @@ const diceInstances = computed(() => {
       instances.push({
         id: `${type}-${i}`,
         type,
-        position: [x + randomX, 0.6, z + randomZ],  // At rest on cup floor (y=0.6)
+        position: [x + randomX, 0.5, z + randomZ],  // At rest on cup floor
         rotation: [
           0,  // No X rotation (laying flat)
           Math.random() * Math.PI * 2,  // Random Y rotation

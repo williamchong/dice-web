@@ -25,10 +25,11 @@ const props = withDefaults(defineProps<Props>(), {
   rotation: () => [0, 0, 0]
 })
 
+const { diceScale } = useResponsive3D()
 const mesh = ref<{ geometry: THREE.BufferGeometry; material: THREE.Material } | null>(null)
 
 onMounted(() => {
-  // Create dice geometry and material
-  mesh.value = createDiceGeometry(props.type)
+  // Create dice geometry and material with responsive scale
+  mesh.value = createDiceGeometry(props.type, diceScale.value)
 })
 </script>

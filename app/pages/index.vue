@@ -15,60 +15,63 @@
     </div>
 
     <!-- Top Bar: Minimal Info -->
-    <div class="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
-      <div class="flex items-center justify-between">
-        <div class="text-sm text-white/80">
+    <div class="absolute top-0 left-0 right-0 p-3 md:p-4 pt-safe bg-gradient-to-b from-black/60 to-transparent pointer-events-none">
+      <div class="flex items-center justify-between text-xs md:text-sm">
+        <div class="text-white/80">
           <span class="font-semibold">{{ diceConfig.totalDiceCount }}</span> dice
         </div>
-        <div v-if="lastRoll" class="text-lg font-bold text-blue-400">
+        <div v-if="lastRoll" class="text-base md:text-lg font-bold text-blue-400">
           Last: {{ lastRoll.total }}
         </div>
       </div>
     </div>
 
     <!-- Bottom Action Bar: Roll Button (Always Visible) -->
-    <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/60 to-transparent">
-      <div class="max-w-md mx-auto space-y-3">
+    <div class="absolute bottom-0 left-0 right-0 p-4 md:p-6 pb-safe bg-gradient-to-t from-black/70 to-transparent pointer-events-none">
+      <div class="max-w-md mx-auto space-y-2 md:space-y-3 pointer-events-auto">
         <!-- Roll Button -->
         <button
           @click="handleRoll"
-          class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95"
+          class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3 md:py-4 rounded-xl shadow-lg transition transform active:scale-95 touch-manipulation"
         >
-          <span class="text-xl">🎲 Roll Dice</span>
+          <span class="text-lg md:text-xl">🎲 Roll Dice</span>
         </button>
 
         <!-- Quick Action Buttons -->
-        <div class="flex gap-3">
+        <div class="flex gap-2 md:gap-3">
           <button
             @click="toggleDiceSelector"
-            class="flex-1 bg-gray-800/90 hover:bg-gray-700 text-white py-3 rounded-lg transition backdrop-blur-sm"
+            class="flex-1 bg-gray-800/90 hover:bg-gray-700 text-white py-2.5 md:py-3 rounded-lg transition backdrop-blur-sm touch-manipulation"
           >
-            ⚙️ Dice
+            <span class="text-sm md:text-base">⚙️ Dice</span>
           </button>
           <button
             @click="toggleHistory"
-            class="flex-1 bg-gray-800/90 hover:bg-gray-700 text-white py-3 rounded-lg transition backdrop-blur-sm"
+            class="flex-1 bg-gray-800/90 hover:bg-gray-700 text-white py-2.5 md:py-3 rounded-lg transition backdrop-blur-sm touch-manipulation"
           >
-            📜 History
+            <span class="text-sm md:text-base">📜 History</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Floating Panel: Dice Selector (Slide in from left) -->
+    <!-- Floating Panel: Dice Selector (Bottom sheet on mobile, side panel on desktop) -->
     <Transition
       enter-active-class="transition-transform duration-300 ease-out"
-      enter-from-class="-translate-x-full"
-      enter-to-class="translate-x-0"
+      enter-from-class="translate-y-full md:-translate-x-full md:translate-y-0"
+      enter-to-class="translate-y-0 md:translate-x-0"
       leave-active-class="transition-transform duration-300 ease-in"
-      leave-from-class="translate-x-0"
-      leave-to-class="-translate-x-full"
+      leave-from-class="translate-y-0 md:translate-x-0"
+      leave-to-class="translate-y-full md:-translate-x-full md:translate-y-0"
     >
       <div
         v-if="showDiceSelector"
-        class="absolute left-0 top-0 bottom-0 w-80 bg-gray-900/95 backdrop-blur-md shadow-2xl border-r border-gray-700 overflow-y-auto"
+        class="absolute left-0 right-0 bottom-0 max-h-[70vh] md:top-0 md:right-auto md:bottom-0 md:w-80 md:max-h-none bg-gray-900/98 md:bg-gray-900/95 backdrop-blur-sm md:backdrop-blur-md shadow-2xl border-t md:border-t-0 md:border-r border-gray-700 overflow-y-auto rounded-t-2xl md:rounded-none"
       >
-        <div class="p-4">
+        <div class="p-4 pb-safe">
+          <!-- Mobile Handle -->
+          <div class="md:hidden w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4" />
+
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-semibold">Select Dice</h2>
             <button
@@ -83,20 +86,23 @@
       </div>
     </Transition>
 
-    <!-- Floating Panel: Roll History (Slide in from right) -->
+    <!-- Floating Panel: Roll History (Bottom sheet on mobile, side panel on desktop) -->
     <Transition
       enter-active-class="transition-transform duration-300 ease-out"
-      enter-from-class="translate-x-full"
-      enter-to-class="translate-x-0"
+      enter-from-class="translate-y-full md:translate-x-full md:translate-y-0"
+      enter-to-class="translate-y-0 md:translate-x-0"
       leave-active-class="transition-transform duration-300 ease-in"
-      leave-from-class="translate-x-0"
-      leave-to-class="translate-x-full"
+      leave-from-class="translate-y-0 md:translate-x-0"
+      leave-to-class="translate-y-full md:translate-x-full md:translate-y-0"
     >
       <div
         v-if="showHistory"
-        class="absolute right-0 top-0 bottom-0 w-80 bg-gray-900/95 backdrop-blur-md shadow-2xl border-l border-gray-700 overflow-y-auto"
+        class="absolute left-0 right-0 bottom-0 max-h-[70vh] md:left-auto md:right-0 md:top-0 md:bottom-0 md:w-80 md:max-h-none bg-gray-900/98 md:bg-gray-900/95 backdrop-blur-sm md:backdrop-blur-md shadow-2xl border-t md:border-t-0 md:border-l border-gray-700 overflow-y-auto rounded-t-2xl md:rounded-none"
       >
-        <div class="p-4">
+        <div class="p-4 pb-safe">
+          <!-- Mobile Handle -->
+          <div class="md:hidden w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4" />
+
           <div class="flex items-center justify-between mb-4">
             <h2 class="text-xl font-semibold">Roll History</h2>
             <button
